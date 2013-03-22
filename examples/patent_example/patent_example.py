@@ -160,7 +160,7 @@ else:
 
 # ## Blocking
 time_start = time.time()
-print 'blocking...'
+print 'starting blocking process...'
 # Initialize our blocker, which determines our field weights and blocking 
 # predicates based on our training data
 blocker = deduper.blockingFunction(ppc=0.001, uncovered_dupes=5)
@@ -172,10 +172,17 @@ print 'Learned blocking weights in', time_block_weights - time_start, 'seconds'
 # If the settings file exists, we will skip all the training and learning
 deduper.writeSettings(settings_file)
 
+## Generate the tfidf canopy
+print 'generating tfidf index input data'
+full_data = ((k, data_d[k]) for k in data_d)
+print 'creating tfidf index'
+blocker.tfIdfBlocks(full_data)
+del full_data
 # Load all the original data in to memory and place
 # them in to blocks. Each record can be blocked in many ways, so for
 # larger data, memory will be a limiting factor.
 
+print 'blocking'
 blocked_data = dedupe.blockData(data_d, blocker)
 
 ## Save the weights and predicates
@@ -194,6 +201,7 @@ blocked_data = tuple(blocked_data)
 #
 # If we had more data, we would not pass in all the blocked data into
 # this function but a representative sample.
+import random
 subset = random.sample(range(len(blocked_data)), 1000)
 threshold_data = [blocked_data[i] for i in subset]
 threshold_data = tuple(threshold_data)
